@@ -1,0 +1,141 @@
+seml:
+  executable: MultiCPA/seml_sweep_icb.py
+  name: mpert19
+  output_dir: /storage/groups/ml01/workspace/kemal.inecik/seml/mpert19/_log
+  conda_environment: mulpert
+  project_root_dir: ../
+
+slurm:
+  max_simultaneous_jobs: 4
+  experiments_per_job: 1
+  sbatch_options_template: CPU
+  sbatch_options:
+    #nice: 2
+    mem: 16G          # memory
+    cpus-per-task: 40 # num cores
+    time: 0-20:00     # max time, D-HH:MM
+
+###### BEGIN PARAMETER CONFIGURATION #####
+
+fixed:
+  training.checkpoint_freq: 100 # checkoint frequencty to save intermediate results
+  training.num_epochs: 1200 # maximum epochs for training
+  training.max_minutes: 1200 # maximum computation time
+  training.ignore_evaluation: False
+  training.save_checkpoints: True
+  training.save_dir: /storage/groups/ml01/workspace/kemal.inecik/seml/mpert19/_last
+  training.save_last: True
+
+  model.model_args.loss_ae: nb # loss
+  model.model_args.patience: 100 # patience for early stopping
+  model.model_args.decoder_activation: linear # non-linearity for doser function
+  model.model_args.is_vae: True
+
+  dataset.dataset_args.dataset_path: datasets/modified_20_Wessel22_prep.h5ad # full path to the anndata dataset
+  dataset.dataset_args.perturbation_key: condition
+  dataset.dataset_args.dose_key: dose_val
+  dataset.dataset_args.cell_type_key: cell_type # necessary field for cell types. Fill it with a dummy variable if no celltypes present.
+  dataset.dataset_args.split_key: split2 # necessary field for train, test, ood splits.
+  dataset.dataset_args.counts_key: counts
+  dataset.dataset_args.proteins_key: protein_expression
+  dataset.dataset_args.raw_proteins_key: protein_expression_raw
+
+grid:
+  model.model_type:
+      type: choice
+      options:
+        #- ComPert
+        - TotalComPert
+        #- PoEComPert
+        #- TotalPoEComPert
+
+random:
+  samples: 1
+  model.model_args.doser_type:
+    type: choice
+    options:
+      - linear
+  model.model_args.hparams.adversary_depth:
+    type: choice
+    options:
+      - 4
+  model.model_args.hparams.adversary_steps:
+    type: choice
+    options:
+      - 4
+  model.model_args.hparams.adversary_width:
+    type: choice
+    options:
+      - 128
+  model.model_args.hparams.autoencoder_depth:
+    type: choice
+    options:
+      - 4
+  model.model_args.hparams.autoencoder_width:
+    type: choice
+    options:
+      - 512
+  model.model_args.hparams.batch_size:
+    type: choice
+    options:
+      - 512
+  model.model_args.hparams.dim:
+    type: choice
+    options:
+      - 256
+  model.model_args.hparams.dosers_depth:
+    type: choice
+    options:
+      - 3
+  model.model_args.hparams.dosers_width:
+    type: choice
+    options:
+      - 128
+  model.model_args.hparams.step_size_lr:
+    type: choice
+    options:
+      - 79
+  model.model_args.hparams.kl_annealing_frac:
+    type: choice
+    options:
+      - 0.2
+  model.model_args.hparams.kl_weight:
+    type: choice
+    options:
+      - 5.0
+  model.model_args.hparams.dosers_lr:
+    type: choice
+    options:
+      - 0.0011968999472599176
+  model.model_args.hparams.dosers_wd:
+    type: choice
+    options:
+      - 4.436923520712216e-08
+  model.model_args.hparams.autoencoder_lr:
+    type: choice
+    options:
+      - 0.00019083560935576104
+  model.model_args.hparams.autoencoder_wd:
+    type: choice
+    options:
+      - 7.968210551931316e-07
+  model.model_args.hparams.adversary_lr:
+    type: choice
+    options:
+      - 6.354224242753993e-05
+  model.model_args.hparams.adversary_wd:
+    type: choice
+    options:
+      - 1.1734622556300683e-05
+  model.model_args.hparams.reg_adversary:
+    type: choice
+    options:
+      - 50.63822618159138
+  model.model_args.hparams.penalty_adversary:
+    type: choice
+    options:
+      - 0.031460907752441224
+  model.model_args.hparams.recon_weight_pro:
+    type: choice
+    options:
+      - 1.1926999391122848

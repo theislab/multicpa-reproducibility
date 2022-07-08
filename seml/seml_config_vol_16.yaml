@@ -1,0 +1,166 @@
+seml:
+  executable: MultiCPA/seml_sweep_icb.py
+  name: mpert16
+  output_dir: /storage/groups/ml01/workspace/kemal.inecik/seml/mpert16/_log
+  conda_environment: mulpert
+  project_root_dir: ../
+
+slurm:
+  max_simultaneous_jobs: 64
+  experiments_per_job: 1
+  sbatch_options_template: GPU
+  sbatch_options:
+    gres: gpu:1       # num GPUs
+    mem: 16G          # memory
+    cpus-per-task: 6  # num cores
+    time: 0-12:00     # max time, D-HH:MM
+
+###### BEGIN PARAMETER CONFIGURATION #####
+
+fixed:
+  training.checkpoint_freq: 100 # checkoint frequencty to save intermediate results
+  training.num_epochs: 1200 # maximum epochs for training
+  training.max_minutes: 600 # maximum computation time
+  training.ignore_evaluation: False
+  training.save_checkpoints: False
+  training.save_dir: /storage/groups/ml01/workspace/kemal.inecik/seml/mpert16/_last
+  training.save_last: True
+
+  model.model_args.loss_ae: nb # loss
+  model.model_args.patience: 100 # patience for early stopping
+  model.model_args.decoder_activation: linear # non-linearity for doser function
+  model.model_args.is_vae: True
+
+  dataset.dataset_args.dataset_path: datasets/Wessel22_prep.h5ad # full path to the anndata dataset
+  dataset.dataset_args.perturbation_key: condition
+  dataset.dataset_args.dose_key: dose_val
+  dataset.dataset_args.cell_type_key: cell_type # necessary field for cell types. Fill it with a dummy variable if no celltypes present.
+  dataset.dataset_args.split_key: split2 # necessary field for train, test, ood splits.
+  dataset.dataset_args.counts_key: counts
+  dataset.dataset_args.proteins_key: protein_expression
+  dataset.dataset_args.raw_proteins_key: protein_expression_raw
+
+grid:
+  model.model_type:
+      type: choice
+      options:
+        #- ComPert
+        - TotalComPert
+        #- PoEComPert
+        #- TotalPoEComPert
+
+random:
+  samples: 2500
+  model.model_args.doser_type:
+    type: choice
+    options:
+      - linear
+      - mlp
+  model.model_args.hparams.adversary_depth:
+    type: choice
+    options:
+      - 2
+      - 3
+      - 4
+  model.model_args.hparams.adversary_steps:
+    type: choice
+    options:
+      - 2
+      - 3
+      - 4
+  model.model_args.hparams.adversary_width:
+    type: choice
+    options:
+      - 64
+      - 128
+      - 256
+  model.model_args.hparams.autoencoder_depth:
+    type: choice
+    options:
+      - 3
+      - 4
+      #- 5:  dropped after mpert9
+  model.model_args.hparams.autoencoder_width:
+    type: choice
+    options:
+      - 256
+      - 512
+      #- 1024:  dropped after mpert9
+  model.model_args.hparams.batch_size:
+    type: choice
+    options:
+      # - 64: dropped after mpert9
+      #- 128: dropped after mpert9
+      - 256
+      - 512
+  model.model_args.hparams.dim:
+    type: choice
+    options:
+      - 128
+      - 256
+      - 512
+  model.model_args.hparams.dosers_depth:
+    type: choice
+    options:
+      - 1
+      - 2
+      - 3
+  model.model_args.hparams.dosers_width:
+    type: choice
+    options:
+      - 32
+      - 64
+      - 128
+  model.model_args.hparams.step_size_lr:
+    type: randint
+    min: 20
+    max: 120
+  model.model_args.hparams.kl_annealing_frac:
+    type: choice
+    options:
+      - 0.2
+      - 0.3
+      - 0.4
+  model.model_args.hparams.kl_weight:
+    type: choice
+    options:
+      - 1.0
+      - 2.0
+      - 5.0
+      - 10.0
+  model.model_args.hparams.dosers_lr:
+    type: loguniform
+    min: 1e-4
+    max: 1e-2
+  model.model_args.hparams.dosers_wd:
+    type: loguniform
+    min: 1e-8
+    max: 1e-5
+  model.model_args.hparams.autoencoder_lr:
+    type: loguniform
+    min: 1e-5 # mpert9: 1e-4
+    max: 2e-4 # mpert9: 1e-2
+  model.model_args.hparams.autoencoder_wd:
+    type: loguniform
+    min: 1e-8
+    max: 1e-5
+  model.model_args.hparams.adversary_lr:
+    type: loguniform
+    min: 1e-5
+    max: 1e-3
+  model.model_args.hparams.adversary_wd:
+    type: loguniform
+    min: 1e-6
+    max: 1e-3
+  model.model_args.hparams.reg_adversary:
+    type: loguniform
+    min: 1e-2
+    max: 1e2
+  model.model_args.hparams.penalty_adversary:
+    type: loguniform
+    min: 1e-2
+    max: 1e1
+  model.model_args.hparams.recon_weight_pro:
+    type: loguniform
+    min: 1e0 # mpert14: 1e-2
+    max: 1e2 
